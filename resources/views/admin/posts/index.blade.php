@@ -15,6 +15,7 @@
                     <th scope="col">Slug</th>
                     <th scope="col">Titolo</th>
                     <th scope="col">Categoria</th>
+                    <th scope="col">Tags</th>
                     <th scope="col">Azioni</th>
                 </tr>
             </thead>
@@ -24,16 +25,22 @@
                         <th scope="row">{{ $post->id }}</th>
                         <td>{{ $post->slug }}</td>
                         <td>{{ $post->title }}</td>
+                        <td>
+                            @if ($post->category)
+                                <a href="{{ route('admin.categories.show', ['category' => $post->category]) }}">{{ $post->category->name }}</a>
+                            @endif
+                        </td>
+                        <td>
+                            @foreach ($post->tags as $tag)
+                                <a href="{{ route('admin.tags.show', ['tag' => $tag]) }}">{{ $tag->name }}</a>{{ $loop->last ? '' : ', ' }}
+                            @endforeach
+                        </td>
 
                         <td>
                             <a href="{{ route('admin.posts.show', ['post' => $post]) }}" class="btn btn-primary">Visita</a>
                         </td>
                         <td>
                             <a href="{{ route('admin.posts.edit', ['post' => $post]) }}" class="btn btn-warning">Edita</a>
-                        </td>
-                        <td>
-                            {{-- <a href="{{ route('admin.posts.edit', ['post' => $post]) }}" class="btn btn-warning">Edita</a> --}}
-                            {{ $post->category->name ?? '' }}
                         </td>
                         {{-- <td>
                             <button class="btn btn-danger btn-delete-me" data-id="{{ $post->id }}">Elimina</button>
