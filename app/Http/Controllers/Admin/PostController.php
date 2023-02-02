@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Tag;
 use App\Post;
 use App\Category;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class PostController extends Controller
         ],
         'title'     => 'required|string|max:100',
         'image'     => 'url|max:100',
-        'uploaded_img'  => 'image|max:1024',
+        'uploaded_img'  => 'nullable|image|max:1024',
         'content'   => 'string',
         'excerpt'   => 'string',
     ];
@@ -46,9 +47,11 @@ class PostController extends Controller
     public function create()
     {
         $categories = Category::all('id', 'name');
+        $tags = Tag::all();
 
         return view('admin.posts.create', [
             'categories'    => $categories,
+            'tags'          => $tags
         ]);
     }
 
@@ -65,9 +68,9 @@ class PostController extends Controller
             'slug'          => 'required|string|max:100|unique:posts',
             'category_id'   => 'required|integer|exists:categories,id',
             'image'         => 'url|max:100',
-            'uploaded_img'  => 'image|max:1024',
-            'content'       => 'string',
-            'excerpt'       => 'string',
+            'uploaded_img'  => 'nullable|image|max:1024',
+            'content'       => 'nullable|string',
+            'excerpt'       => 'nullable|string',
         ]);
 
 
@@ -76,14 +79,19 @@ class PostController extends Controller
         $img_path = isset($data['uploaded_img']) ? Storage::put('uploads', $data['uploaded_img']) : null;
 
 
+        // salvare i dati nel db
         $post = new Post;
-        $post->slug          = $data['slug'];
-        $post->title         = $data['title'];
-        $post->image         = $data['image'];
-        $post->uploaded_img  = $img_path;
-        $post->content       = $data['content'];
-        $post->excerpt       = $data['excerpt'];
+        $post->slug             = $data['slug'];
+        $post->title            = $data['title'];
+        $post->category_id      = $data['category_id'];
+        $post->image            = $data['image'];
+        $post->uploaded_img     = $img_path;
+        $post->content          = $data['content'];
+        $post->excerpt          = $data['excerpt'];
         $post->save();
+
+        // associamo il post appena creato ai tag
+        $post->tags()->attach($data['tags']);
 
         return redirect()->route('admin.posts.show', ['post' => $post]);
     }
@@ -107,7 +115,14 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
-        return view('admin.posts.edit', compact('post'));
+        $categories = Category::all('id', 'name');
+        $tags       = Tag::all();
+
+        return view('admin.posts.edit', [
+            'post'          => $post,
+            'categories'    => $categories,
+            'tags'          => $tags,
+        ]);
     }
 
     /**
@@ -129,8 +144,8 @@ class PostController extends Controller
             'title'     => 'required|string|max:100',
             'image'     => 'url|max:100',
             'uploaded_img'  => 'image|max:1024',
-            'content'   => 'string',
-            'excerpt'   => 'string',
+            'content'   => 'nullable|string',
+            'excerpt'   => 'nullable|string',
         ]);
 
         $data = $request->all();
@@ -159,6 +174,7 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+        $post->tags()->detach();
         $post->delete();
 
         return redirect()->route('admin.posts.index')->with('success_delete', $post);

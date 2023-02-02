@@ -50,6 +50,30 @@
             </div>
         </div>
 
+        <div class="col-12">
+            <h2>Tags</h2>
+            @foreach ($tags as $tag)
+                <div class="form-check">
+                    <input
+                        id="tag-{{ $tag->id }}"
+                        class="form-check-input"
+                        type="checkbox"
+                        value="{{ $tag->id }}"
+                        name="tags[]"
+                        @if (in_array($tag->id, old('tags', []))) checked @endif
+                    >
+                    <label class="form-check-label" for="tag-{{ $tag->id }}">
+                        {{ $tag->name }}
+                    </label>
+                </div>
+            @endforeach
+            @if ($errors->has('tags') || $errors->has('tags.*'))
+                <div>
+                    Ci sono problemi con i tags
+                </div>
+            @endif
+        </div>
+
         <div class="mb-3">
             <label for="image" class="form-label">URL immagine</label>
             <input type="url" class="form-control @error('image') is-invalid @enderror" id="image" name="image" value="{{ old('image') }}">
