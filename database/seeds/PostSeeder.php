@@ -1,5 +1,6 @@
 <?php
 
+use App\Tag;
 use App\Post;
 use App\Category;
 use Faker\Generator as Faker;
@@ -16,6 +17,9 @@ class PostSeeder extends Seeder
     public function run(Faker $faker)
     {
         $categories = Category::all('id')->all();
+        $tags = Tag::all()->pluck('id');
+        $tagCount = count($tags);
+
         for($i = 0; $i < 100; $i++) {
             $title = $faker->words(rand(3, 7), true);
 
@@ -30,8 +34,7 @@ class PostSeeder extends Seeder
                 ]
             );
 
-
-            // $post->tags()->attach($faker->randomElements($tags, rand(1, ($tagCount > 5) ? 5 : $tagCount)));
+            $post->tags()->attach($faker->randomElements($tags, rand(1, ($tagCount > 5) ? 5 : $tagCount)));
 
         }
     }
